@@ -5,9 +5,16 @@
 
 ## Perancangan Sistem (DFD)
 - DFD Level 0
-<img width="959" height="400" alt="dfd_lvl_0 drawio" src="https://github.com/user-attachments/assets/5d946fb2-1019-4336-be1e-e893e57ad411" />
+![DFD level 0](https://github.com/user-attachments/assets/7bca9707-f961-45ac-835d-ec730b2407fe)
+
 - DFD Level 1
-<img width="1600" height="826" alt="image" src="https://github.com/user-attachments/assets/9a1637b5-1055-40d4-b6e4-84121d3f856a" />
+![DFD level 1](https://github.com/user-attachments/assets/7270d2bc-3a85-42f4-8760-e09edfeab69d)
+
+## Entity Relationship Diagram (ERD)
+![ERD Impal](https://github.com/user-attachments/assets/c2977a6a-298b-4e8f-b34b-65253a3352bd)
+
+## Class Diagram
+![Class Diagram](https://github.com/user-attachments/assets/539581c8-8348-4950-901c-dbab0225d595)
 
 ## Mockup Antarmuka
 <img width="1167" height="656" alt="image" src="https://github.com/user-attachments/assets/fe812aae-5797-4419-925d-507b2720010c" />

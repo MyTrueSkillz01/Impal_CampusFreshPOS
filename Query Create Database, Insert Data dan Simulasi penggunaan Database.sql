@@ -1,10 +1,10 @@
+CREATE DATABASE IF NOT EXISTS impal_campusfreshpos;
 USE impal_campusfreshpos;
 
--- 1. TABEL KASIR
+-- 1. TABEL KASIR (Revisi: id_kasir dihapus, username jadi PK)
 CREATE TABLE kasir (
-    id_kasir VARCHAR(10) PRIMARY KEY,
+    username VARCHAR(50) PRIMARY KEY,
     nama VARCHAR(100) NOT NULL,
-    username VARCHAR(50) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL
 );
 
@@ -29,7 +29,7 @@ CREATE TABLE produk (
     kontak_penjual VARCHAR(15)
 );
 
--- 4. TABEL PESANAN
+-- 4. TABEL PESANAN (Revisi: Foreign Key merujuk ke username kasir)
 CREATE TABLE pesanan (
     nomer_pesanan VARCHAR(20) PRIMARY KEY,
     invoice VARCHAR(30) UNIQUE NOT NULL,
@@ -38,9 +38,9 @@ CREATE TABLE pesanan (
     bukti_pembayaran TEXT,
     status_pesanan VARCHAR(20) DEFAULT 'Proses',
     total_bayar DECIMAL(10, 2) DEFAULT 0,
-    id_kasir VARCHAR(10),
+    username_kasir VARCHAR(50), 
     nim VARCHAR(20),
-    FOREIGN KEY (id_kasir) REFERENCES kasir(id_kasir),
+    FOREIGN KEY (username_kasir) REFERENCES kasir(username),
     FOREIGN KEY (nim) REFERENCES pelanggan(nim)
 );
 
@@ -60,9 +60,12 @@ CREATE TABLE detail_pesanan (
 
 -- Insert Dummy Data Semua
 -- Insert Dummy Kasir
-INSERT INTO kasir (id_kasir, nama, username, password_hash) VALUES
-('KSR01', 'Andi Hermawan', 'andi_kasir', 'hash_12345'),
-('KSR02', 'Budi Santoso', 'budi_pos', 'hash_67890');
+INSERT INTO kasir (username, password_hash, nama) VALUES
+('kresna', 'hash_pw_001', 'Kresna Satriawansyah'),
+('ihsan', 'hash_pw_002', 'Ihsan Dwika Putra'),
+('raisya', 'hash_pw_003', 'Raisya Latifah'),
+('wafiq', 'hash_pw_004', 'Wafiq Aditiya'),
+('admin', 'hash_pw_005', 'Admin Kasir');
 
 -- Insert Dummy Pelanggan (Mahasiswa Baru)
 INSERT INTO pelanggan (nim, nama_pembeli, no_telp, alamat) VALUES

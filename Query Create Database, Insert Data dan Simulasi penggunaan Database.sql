@@ -1,14 +1,14 @@
-CREATE DATABASE IF NOT EXISTS impal_campusfreshpos;
+CREATE DATABASE impal_campusfreshpos;
 USE impal_campusfreshpos;
 
--- 1. TABEL KASIR (Revisi: id_kasir dihapus, username jadi PK)
+-- TABEL KASIR (username sebagai PK)
 CREATE TABLE kasir (
     username VARCHAR(50) PRIMARY KEY,
     nama VARCHAR(100) NOT NULL,
     password_hash VARCHAR(255) NOT NULL
 );
 
--- 2. TABEL PELANGGAN
+-- TABEL PELANGGAN
 CREATE TABLE pelanggan (
     nim VARCHAR(20) PRIMARY KEY,
     nama_pembeli VARCHAR(100) NOT NULL,
@@ -16,7 +16,7 @@ CREATE TABLE pelanggan (
     alamat TEXT
 );
 
--- 3. TABEL PRODUK
+-- TABEL PRODUK
 CREATE TABLE produk (
     id_produk VARCHAR(10) PRIMARY KEY,
     nama_produk VARCHAR(150) NOT NULL,
@@ -29,7 +29,7 @@ CREATE TABLE produk (
     kontak_penjual VARCHAR(15)
 );
 
--- 4. TABEL PESANAN (Revisi: Foreign Key merujuk ke username kasir)
+-- TABEL PESANAN
 CREATE TABLE pesanan (
     nomer_pesanan VARCHAR(20) PRIMARY KEY,
     invoice VARCHAR(30) UNIQUE NOT NULL,
@@ -44,7 +44,7 @@ CREATE TABLE pesanan (
     FOREIGN KEY (nim) REFERENCES pelanggan(nim)
 );
 
--- 5. TABEL DETAIL PESANAN
+-- TABEL DETAIL PESANAN
 CREATE TABLE detail_pesanan (
     id_detail INT AUTO_INCREMENT PRIMARY KEY,
     qty INT NOT NULL,
@@ -57,9 +57,11 @@ CREATE TABLE detail_pesanan (
     FOREIGN KEY (id_produk) REFERENCES produk(id_produk)
 );
 
+-- ==========================================================
+-- 2. INSERT DATA DUMMY
+-- ==========================================================
 
--- Insert Dummy Data Semua
--- Insert Dummy Kasir
+-- Data Kasir
 INSERT INTO kasir (username, password_hash, nama) VALUES
 ('kresna', 'hash_pw_001', 'Kresna Satriawansyah'),
 ('ihsan', 'hash_pw_002', 'Ihsan Dwika Putra'),
@@ -67,13 +69,13 @@ INSERT INTO kasir (username, password_hash, nama) VALUES
 ('wafiq', 'hash_pw_004', 'Wafiq Aditiya'),
 ('admin', 'hash_pw_005', 'Admin Kasir');
 
--- Insert Dummy Pelanggan (Mahasiswa Baru)
+-- Data Pelanggan
 INSERT INTO pelanggan (nim, nama_pembeli, no_telp, alamat) VALUES
 ('1301213001', 'Citra Kirana', '08123456001', 'Asrama Putri Gedung A'),
 ('1301213002', 'Dimas Anggara', '08123456002', 'Kosan Bojongsoang'),
 ('1301213003', 'Eka Putra', '08123456003', 'Asrama Putra Gedung C');
 
--- Insert 10 Dummy Produk (Perlengkapan Maba)
+-- Data 10 Produk Perlengkapan Maba
 INSERT INTO produk (id_produk, nama_produk, gambar_produk, kategori, stock, harga_modal, harga_jual, status_aktif, kontak_penjual) VALUES
 ('PRD01', 'Jas Almamater Ukuran M', 'url_jas_m.jpg', 'Pakaian', 50, 120000, 150000, TRUE, '0899112233'),
 ('PRD02', 'Jas Almamater Ukuran L', 'url_jas_l.jpg', 'Pakaian', 50, 120000, 150000, TRUE, '0899112233'),
@@ -86,49 +88,44 @@ INSERT INTO produk (id_produk, nama_produk, gambar_produk, kategori, stock, harg
 ('PRD09', 'Lanyard ID Card', 'url_lanyard.jpg', 'Aksesoris', 150, 8000, 15000, TRUE, '0899112233'),
 ('PRD10', 'Sepatu Pantofel Hitam', 'url_sepatu.jpg', 'Pakaian', 20, 150000, 200000, TRUE, '0877665544');
 
--- Insert Dummy Pesanan (Selesai & Proses)
-INSERT INTO pesanan (nomer_pesanan, invoice, waktu, catatan_pemesanan, bukti_pembayaran, status_pesanan, total_bayar, id_kasir, nim) VALUES
-('ORD-001', 'INV-001', '2023-08-01 09:00:00', 'Ambil di tempat', 'tf_001.jpg', 'Selesai', 175000, 'KSR01', '1301213001'),
-('ORD-002', 'INV-002', '2023-08-01 10:15:00', 'Titip di satpam', 'tf_002.jpg', 'Selesai', 85000, 'KSR02', '1301213002'),
-('ORD-003', 'INV-003', '2023-08-01 11:30:00', '-', 'tf_003.jpg', 'Proses', 40000, 'KSR01', '1301213003');
+-- Data Pesanan Awal
+INSERT INTO pesanan (nomer_pesanan, invoice, waktu, catatan_pemesanan, bukti_pembayaran, status_pesanan, total_bayar, username_kasir, nim) VALUES
+('ORD-001', 'INV-001', '2023-08-01 09:00:00', 'Ambil di tempat', 'tf_001.jpg', 'Selesai', 175000, 'kresna', '1301213001'),
+('ORD-002', 'INV-002', '2023-08-01 10:15:00', 'Titip di satpam', 'tf_002.jpg', 'Selesai', 85000, 'ihsan', '1301213002'),
+('ORD-003', 'INV-003', '2023-08-01 11:30:00', '-', 'tf_003.jpg', 'Proses', 40000, 'raisya', '1301213003');
 
--- Insert Dummy Detail Pesanan
--- Detail ORD-001 (Citra beli Jas M & Dasi)
+-- Data Detail Pesanan Awal
 INSERT INTO detail_pesanan (qty, harga_satuan, harga_modal_satuan, subtotal_harga, nomer_pesanan, id_produk) VALUES
 (1, 150000, 120000, 150000, 'ORD-001', 'PRD01'),
-(1, 25000, 15000, 25000, 'ORD-001', 'PRD03');
--- Detail ORD-002 (Dimas beli Kaos & Topi)
-INSERT INTO detail_pesanan (qty, harga_satuan, harga_modal_satuan, subtotal_harga, nomer_pesanan, id_produk) VALUES
+(1, 25000, 15000, 25000, 'ORD-001', 'PRD03'),
 (1, 65000, 45000, 65000, 'ORD-002', 'PRD05'),
-(1, 20000, 10000, 20000, 'ORD-002', 'PRD04');
--- Detail ORD-003 (Eka beli Totebag)
-INSERT INTO detail_pesanan (qty, harga_satuan, harga_modal_satuan, subtotal_harga, nomer_pesanan, id_produk) VALUES
+(1, 20000, 10000, 20000, 'ORD-002', 'PRD04'),
 (1, 40000, 25000, 40000, 'ORD-003', 'PRD08');
 
+-- ==========================================================
+-- 3. SIMULASI OPERASIONAL
+-- ==========================================================
 
--- SIMULASI OPERASIONAL
--- [Proses 1] Simulasi Login Kasir
+-- [Proses 1] Login
 SELECT * FROM kasir WHERE username = 'kresna' AND password_hash = 'hash_pw_001';
 
--- [Proses 2] Simulasi Menampilkan Katalog Produk
+-- [Proses 2] Lihat Stok
 SELECT id_produk, nama_produk, harga_jual, stock FROM produk WHERE status_aktif = TRUE;
 
--- [Proses 3] Simulasi Kasir Memproses Pesanan Baru (Checkout)
--- A. Masukkan Pelanggan (Jika belum ada)
-INSERT IGNORE INTO pelanggan (nim, nama_pembeli, no_telp, alamat) 
-VALUES ('1301213004', 'Fajar', '0855667788', 'Asrama');
--- B. Buat Header Pesanan (Revisi: Menggunakan username 'kresna')
-INSERT INTO pesanan (nomer_pesanan, invoice, catatan_pemesanan, bukti_pembayaran, total_bayar, username_kasir, nim) 
-VALUES ('ORD-004', 'INV-004', 'Cepat ya', 'bukti.jpg', 60000, 'kresna', '1301213004');
--- C. Masukkan Item Keranjang (Contoh: Beli 2 Buku Tulis)
+-- [Proses 3] Transaksi Baru (Checkout)
+INSERT IGNORE INTO pelanggan (nim, nama_pembeli, no_telp, alamat) VALUES ('1301213004', 'Fajar', '0855667788', 'Asrama');
+
+INSERT INTO pesanan (nomer_pesanan, invoice, catatan_pemesanan, total_bayar, username_kasir, nim) 
+VALUES ('ORD-004', 'INV-004', 'Cepat ya', 60000, 'kresna', '1301213004');
+
 INSERT INTO detail_pesanan (qty, harga_satuan, harga_modal_satuan, subtotal_harga, nomer_pesanan, id_produk) 
 VALUES (2, 30000, 20000, 60000, 'ORD-004', 'PRD06');
--- D. Kurangi Stok Produk
+
 UPDATE produk SET stock = stock - 2 WHERE id_produk = 'PRD06';
--- E. Kasir Konfirmasi Pesanan Selesai
+
 UPDATE pesanan SET status_pesanan = 'Selesai' WHERE nomer_pesanan = 'ORD-004';
 
--- [Proses 4] Simulasi Settlement (Laporan Tutup Kasir Hari Ini)
+-- [Proses 4] Laporan Settlement
 SELECT 
     COUNT(DISTINCT ps.nomer_pesanan) AS total_transaksi,
     SUM(dp.qty) AS produk_terjual,

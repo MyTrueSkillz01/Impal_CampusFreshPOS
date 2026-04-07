@@ -71,9 +71,16 @@ INSERT INTO kasir (username, password_hash, nama) VALUES
 
 -- Data Pelanggan
 INSERT INTO pelanggan (nim, nama_pembeli, no_telp, alamat) VALUES
-('1301213001', 'Citra Kirana', '08123456001', 'Asrama Putri Gedung A'),
-('1301213002', 'Dimas Anggara', '08123456002', 'Kosan Bojongsoang'),
-('1301213003', 'Eka Putra', '08123456003', 'Asrama Putra Gedung C');
+('1301213004', 'Fajar Ramadhan', '08123456004', 'Kosan Sukabirus'),
+('1301213005', 'Giska Putri', '08123456005', 'Asrama Putri Gedung B'),
+('1301213006', 'Hendra Wijaya', '08123456006', 'Kosan PGA'),
+('1301213007', 'Indah Permata', '08123456007', 'Apartemen Transit'),
+('1301213008', 'Jaka Tarub', '08123456008', 'Kosan Adhyaksa'),
+('1301213009', 'Karin Amelia', '08123456009', 'Asrama Putri Gedung D'),
+('1301213010', 'Luthfi Hakim', '08123456010', 'Kosan Sukapura'),
+('1301213011', 'Maulana Malik', '08123456011', 'Asrama Putra Gedung E'),
+('1301213012', 'Nadia Safira', '08123456012', 'Kosan Mengger'),
+('1301213013', 'Oky Pratama', '08123456013', 'Kosan Bojongsoang Dalam');
 
 -- Data 10 Produk Perlengkapan Maba
 INSERT INTO produk (id_produk, nama_produk, gambar_produk, kategori, stock, harga_modal, harga_jual, status_aktif, kontak_penjual) VALUES
@@ -90,17 +97,30 @@ INSERT INTO produk (id_produk, nama_produk, gambar_produk, kategori, stock, harg
 
 -- Data Pesanan Awal
 INSERT INTO pesanan (nomer_pesanan, invoice, waktu, catatan_pemesanan, bukti_pembayaran, status_pesanan, total_bayar, username_kasir, nim) VALUES
-('ORD-001', 'INV-001', '2023-08-01 09:00:00', 'Ambil di tempat', 'tf_001.jpg', 'Selesai', 175000, 'kresna', '1301213001'),
-('ORD-002', 'INV-002', '2023-08-01 10:15:00', 'Titip di satpam', 'tf_002.jpg', 'Selesai', 85000, 'ihsan', '1301213002'),
-('ORD-003', 'INV-003', '2023-08-01 11:30:00', '-', 'tf_003.jpg', 'Proses', 40000, 'raisya', '1301213003');
+('ORD-004', 'INV-004', '2023-08-02 08:30:00', 'Segera kirim', 'tf_004.jpg', 'Selesai', 215000, 'kresna', '1301213004'),
+('ORD-005', 'INV-005', '2023-08-02 13:00:00', '-', 'tf_005.jpg', 'Selesai', 120000, 'ihsan', '1301213005'),
+('ORD-006', 'INV-006', '2023-08-03 09:45:00', 'Warna hitam saja', 'tf_006.jpg', 'Proses', 25000, 'raisya', '1301213006'),
+('ORD-007', 'INV-007', '2023-08-03 14:20:00', 'Ambil jam 4 sore', 'tf_007.jpg', 'Batal', 75000, 'kresna', '1301213007'),
+('ORD-008', 'INV-008', '2023-08-04 10:10:00', '-', 'tf_008.jpg', 'Selesai', 110000, 'ihsan', '1301213008'),
+('ORD-009', 'INV-009', '2023-08-04 16:30:00', 'Kirim ke asrama', 'tf_009.jpg', 'Proses', 200000, 'raisya', '1301213009'),
+('ORD-010', 'INV-010', '2023-08-05 11:00:00', 'Titip teman', 'tf_010.jpg', 'Selesai', 15000, 'kresna', '1301213010'),
+('ORD-011', 'INV-011', '2023-08-05 15:45:00', '-', 'tf_011.jpg', 'Selesai', 55000, 'ihsan', '1301213011'),
+('ORD-012', 'INV-012', '2023-08-06 08:00:00', 'Packaging aman', 'tf_012.jpg', 'Selesai', 60000, 'raisya', '1301213012'),
+('ORD-013', 'INV-013', '2023-08-06 12:20:00', 'Urgent', 'tf_013.jpg', 'Selesai', 185000, 'kresna', '1301213013');
 
 -- Data Detail Pesanan Awal
 INSERT INTO detail_pesanan (qty, harga_satuan, harga_modal_satuan, subtotal_harga, nomer_pesanan, id_produk) VALUES
-(1, 150000, 120000, 150000, 'ORD-001', 'PRD01'),
-(1, 25000, 15000, 25000, 'ORD-001', 'PRD03'),
-(1, 65000, 45000, 65000, 'ORD-002', 'PRD05'),
-(1, 20000, 10000, 20000, 'ORD-002', 'PRD04'),
-(1, 40000, 25000, 40000, 'ORD-003', 'PRD08');
+(1, 120000, 90000, 120000, 'ORD-004', 'PRD12'),
+(1, 95000, 75000, 95000, 'ORD-004', 'PRD11'),
+(1, 120000, 90000, 120000, 'ORD-005', 'PRD12'),
+(1, 25000, 15000, 25000, 'ORD-006', 'PRD13'),
+(1, 75000, 45000, 75000, 'ORD-007', 'PRD15'),
+(2, 55000, 30000, 110000, 'ORD-008', 'PRD17'),
+(1, 200000, 150000, 200000, 'ORD-009', 'PRD10'),
+(1, 15000, 8000, 15000, 'ORD-010', 'PRD16'),
+(1, 55000, 30000, 55000, 'ORD-011', 'PRD17'),
+(1, 60000, 35000, 60000, 'ORD-012', 'PRD19'),
+(1, 185000, 120000, 185000, 'ORD-013', 'PRD20');
 
 -- ==========================================================
 -- 3. SIMULASI OPERASIONAL

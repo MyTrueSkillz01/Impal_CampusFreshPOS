@@ -3,7 +3,7 @@ import { getDb } from '@/lib/db';
 
 export async function PUT(request, { params }) {
   try {
-    const id = params.id;
+    const { id } = await params;
     const body = await request.json();
     const { product_code, image_url, name, category, stock, cost_price, selling_price, is_active, seller_phone } = body;
     
@@ -47,7 +47,7 @@ export async function PUT(request, { params }) {
 
 export async function DELETE(request, { params }) {
   try {
-    const id = params.id;
+    const { id } = await params;
     const db = await getDb();
     
     const stmt = await db.prepare('DELETE FROM products WHERE id = ?');

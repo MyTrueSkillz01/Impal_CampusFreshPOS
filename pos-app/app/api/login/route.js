@@ -10,11 +10,20 @@ export async function POST(request) {
     await initDb();
     const db = await getDb();
 
-    // In a real app, hash the password and compare!
+    const encodedPassword = Buffer.from(password).toString('base64');
+
+    // Check for plain text (backward compatibility) or base64 encoded password
     const cashier = await db.get(
-      'SELECT id, username, name FROM cashiers WHERE username = ? AND password = ?',
-      [username, password]
+      'SELECT id, username, name, role, status FROM cashiers WHERE username = ? AND (password = ? OR password = ?)',
+      [username, password, encodedPassword]
     );
+
+    if (cashier && cashier.status === 'Nonaktif') {
+      return NextResponse.json(
+        { error: 'Akun kasir ini telah dinonaktifkan' },
+        { status: 403 }
+      );
+    }
 
     if (!cashier) {
       return NextResponse.json(

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Printer, Download, Calendar } from 'lucide-react';
 import styles from './Report.module.css';
 
@@ -13,17 +13,23 @@ export default function Report() {
 
   const reportRef = useRef(null);
 
-  const fetchReport = async () => {
-    if (!startDate || !endDate) {
-      setError('Filter tanggal wajib diisi sebelum laporan ditampilkan.');
-      return;
-    }
+  const today = new Date();
+  const todayFormatted = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
 
+  useEffect(() => {
+    fetchReport();
+  }, []);
+
+  const fetchReport = async () => {
     setIsLoading(true);
     setError('');
 
     try {
-      const res = await fetch(`/api/report?startDate=${startDate}&endDate=${endDate}`);
+      const queryParams = new URLSearchParams();
+      if (startDate) queryParams.append('startDate', startDate);
+      if (endDate) queryParams.append('endDate', endDate);
+
+      const res = await fetch(`/api/report?${queryParams.toString()}`);
       if (!res.ok) {
         throw new Error('Gagal memuat laporan');
       }
@@ -75,7 +81,10 @@ export default function Report() {
             <label>Dari Tanggal</label>
             <div style={{ position: 'relative' }}>
               <input 
-                type="date" 
+                type={startDate ? "date" : "text"}
+                placeholder="Semua"
+                onFocus={(e) => e.target.type = 'date'}
+                onBlur={(e) => { if (!e.target.value) e.target.type = 'text'; }}
                 className={styles.dateInput} 
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
@@ -86,7 +95,10 @@ export default function Report() {
           <div className={styles.inputGroup}>
             <label>Sampai Tanggal</label>
             <input 
-              type="date" 
+              type={endDate ? "date" : "text"}
+              placeholder={todayFormatted}
+              onFocus={(e) => e.target.type = 'date'}
+              onBlur={(e) => { if (!e.target.value) e.target.type = 'text'; }}
               className={styles.dateInput} 
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
@@ -157,23 +169,18 @@ export default function Report() {
                   </div>
                 </div>
                 <div className={styles.summaryCard}>
-                  <div className={styles.summaryLabel}>Total Subtotal</div>
+                  <div className={styles.summaryLabel}>Total Penjualan</div>
                   <div className={styles.summaryValue}>
                     Rp {reportData.summary.totalSubtotal.toLocaleString('id-ID')}
                   </div>
                 </div>
                 <div className={styles.summaryCard}>
-                  <div className={styles.summaryLabel}>Laba Kotor</div>
+                  <div className={styles.summaryLabel}>Laba</div>
                   <div className={`${styles.summaryValue} ${styles.green}`}>
                     Rp {reportData.summary.grossProfit.toLocaleString('id-ID')}
                   </div>
                 </div>
-                <div className={styles.summaryCard}>
-                  <div className={styles.summaryLabel}>Total Pendapatan Akhir</div>
-                  <div className={`${styles.summaryValue} ${styles.green}`}>
-                    Rp {reportData.summary.totalFinalRevenue.toLocaleString('id-ID')}
-                  </div>
-                </div>
+
               </div>
 
               <div className={styles.tablesContainer}>
@@ -193,7 +200,7 @@ export default function Report() {
                       {reportData.transactions.map((tx) => (
                         <tr key={tx.id}>
                           <td style={{ fontWeight: 600 }}>{tx.invoice_number}</td>
-                          <td>{new Date(tx.created_at).toLocaleString('id-ID')}</td>
+                          <td>{new Date(tx.created_at.includes('Z') ? tx.created_at : tx.created_at + 'Z').toLocaleString('id-ID')}</td>
                           <td>{tx.cashier_name}</td>
                           <td style={{ fontWeight: 600 }}>Rp {tx.total_amount.toLocaleString('id-ID')}</td>
                         </tr>

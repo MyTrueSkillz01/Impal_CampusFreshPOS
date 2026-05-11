@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Save } from 'lucide-react';
 import styles from '../pos.module.css'; // Reuse POS styles for basic layout config if needed
@@ -8,6 +8,8 @@ import styles from '../pos.module.css'; // Reuse POS styles for basic layout con
 export default function AddProductPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [errorToast, setErrorToast] = useState('');
   const [formData, setFormData] = useState({
     product_code: '',
     name: '',
@@ -28,6 +30,30 @@ export default function AddProductPage() {
     }));
   };
 
+  useEffect(() => {
+    // Generate next product code automatically
+    fetch('/api/products')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.length > 0) {
+          let maxNum = 0;
+          data.forEach(p => {
+            if (p.product_code && p.product_code.startsWith('P')) {
+              const num = parseInt(p.product_code.substring(1));
+              if (!isNaN(num) && num > maxNum) {
+                maxNum = num;
+              }
+            }
+          });
+          const nextCode = `P${String(maxNum + 1).padStart(3, '0')}`;
+          setFormData(prev => ({ ...prev, product_code: nextCode }));
+        } else {
+          setFormData(prev => ({ ...prev, product_code: 'P001' }));
+        }
+      })
+      .catch(err => console.error('Failed to fetch products for auto-id', err));
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -41,10 +67,13 @@ export default function AddProductPage() {
         const error = await res.json();
         throw new Error(error.error || 'Failed to add product');
       }
-      alert('Produk berhasil ditambahkan!');
-      router.push('/pos');
+      setToastMessage('Produk berhasil ditambahkan!');
+      setTimeout(() => {
+        router.push('/pos');
+      }, 1500);
     } catch (error) {
-      alert(`Gagal menambah produk: ${error.message}`);
+      setErrorToast(`Gagal: ${error.message}`);
+      setTimeout(() => setErrorToast(''), 4000);
     } finally {
       setLoading(false);
     }
@@ -143,6 +172,20 @@ export default function AddProductPage() {
         </div>
 
       </div>
+      
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div style={{ position: 'fixed', bottom: '24px', right: '24px', background: '#10B981', color: 'white', padding: '16px 24px', borderRadius: '8px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', fontWeight: 'bold', zIndex: 1001, animation: 'fadeIn 0.3s ease' }}>
+          {toastMessage}
+        </div>
+      )}
+
+      {/* Error Toast Notification */}
+      {errorToast && (
+        <div style={{ position: 'fixed', bottom: '24px', right: '24px', background: '#EF4444', color: 'white', padding: '16px 24px', borderRadius: '8px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', fontWeight: 'bold', zIndex: 1001, animation: 'fadeIn 0.3s ease' }}>
+          {errorToast}
+        </div>
+      )}
     </div>
   );
 }

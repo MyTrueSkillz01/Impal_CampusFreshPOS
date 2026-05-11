@@ -108,6 +108,13 @@ export async function POST(request) {
       [invoiceNumber, newId]
     );
 
+    // Deduct stock for each item in the cart
+    const updateStockStmt = await db.prepare('UPDATE products SET stock = stock - ? WHERE id = ?');
+    for (const item of cart) {
+      await updateStockStmt.run([item.qty, item.id]);
+    }
+    await updateStockStmt.finalize();
+
     return NextResponse.json({ success: true, id: newId, invoice_number: invoiceNumber });
   } catch (error) {
     console.error('Error saving transaction:', error);

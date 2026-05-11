@@ -45,6 +45,9 @@ export async function POST(request) {
 
     return NextResponse.json({ id: result.lastID, success: true }, { status: 201 });
   } catch (error) {
+    if (error.message.includes('UNIQUE constraint failed: products.product_code')) {
+      return NextResponse.json({ error: 'ID Produk sudah digunakan, silakan gunakan ID lain' }, { status: 400 });
+    }
     console.error('Failed to create product:', error);
     return NextResponse.json({ error: 'Failed to create product', details: error.message }, { status: 500 });
   }

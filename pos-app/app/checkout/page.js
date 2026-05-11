@@ -71,8 +71,32 @@ export default function CheckoutPage() {
     setCapturedPhoto(null);
   };
 
-  const finishUpload = () => {
-    // Simulated upload
+  const finishUpload = async () => {
+    try {
+      const response = await fetch('/api/transactions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cart: cart,
+          totalAmount: totalPrice,
+          customerInfo: {
+            ...formData,
+            paymentProof: capturedPhoto
+          }
+        })
+      });
+
+      if (!response.ok) {
+        const errJson = await response.json();
+        alert(errJson.error || 'Gagal menyimpan transaksi');
+        return; // Stop execution if failed
+      }
+    } catch (e) {
+      console.error('Error saving transaction:', e);
+      alert('Terjadi kesalahan saat memproses transaksi');
+      return; // Stop execution if failed
+    }
+
     setIsCameraOpen(false);
     setIsSuccess(true);
     localStorage.removeItem('pos_cart');

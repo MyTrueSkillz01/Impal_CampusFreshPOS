@@ -13,10 +13,6 @@ export async function GET(request) {
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
 
-    if (!startDate || !endDate) {
-      return NextResponse.json({ error: 'startDate and endDate are required' }, { status: 400 });
-    }
-
     const db = await getDb();
 
     // Ensure table exists
@@ -32,11 +28,23 @@ export async function GET(request) {
       );
     `);
 
-    const transactions = await db.all(`
-      SELECT * FROM transactions 
-      WHERE date(created_at, 'localtime') BETWEEN ? AND ?
-      ORDER BY id DESC
-    `, [startDate, endDate]);
+    let query = 'SELECT * FROM transactions';
+    let params = [];
+
+    if (startDate && endDate) {
+      query += ` WHERE date(created_at, 'localtime') BETWEEN ? AND ?`;
+      params.push(startDate, endDate);
+    } else if (startDate) {
+      query += ` WHERE date(created_at, 'localtime') >= ?`;
+      params.push(startDate);
+    } else if (endDate) {
+      query += ` WHERE date(created_at, 'localtime') <= ?`;
+      params.push(endDate);
+    }
+    
+    query += ` ORDER BY id DESC`;
+
+    const transactions = await db.all(query, params);
 
     let totalTransactions = transactions.length;
     let productsSold = 0;

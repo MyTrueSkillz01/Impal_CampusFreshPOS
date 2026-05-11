@@ -56,7 +56,9 @@ export default function Bills() {
                 }
               } catch (e) { }
 
-              const timeString = new Date(bill.created_at).toLocaleTimeString('id-ID', {
+              // Append 'Z' so JS treats SQLite's CURRENT_TIMESTAMP as UTC and correctly converts it to local time
+              const dateObj = new Date(bill.created_at.includes('Z') ? bill.created_at : bill.created_at + 'Z');
+              const timeString = dateObj.toLocaleTimeString('id-ID', {
                 hour: '2-digit',
                 minute: '2-digit'
               });

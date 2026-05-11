@@ -9,6 +9,9 @@ export default function ProductTable() {
   const router = useRouter();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [toastMessage, setToastMessage] = useState('');
+  const [productToDelete, setProductToDelete] = useState(null);
 
   const fetchProducts = async () => {
     try {
@@ -28,10 +31,54 @@ export default function ProductTable() {
     fetchProducts();
   }, []);
 
-  const handleDelete = async (id) => {
-    if (confirm('Apakah Anda yakin ingin menghapus produk ini?')) {
-      await fetch(`/api/products/${id}`, { method: 'DELETE' });
-      fetchProducts();
+  const confirmDelete = (id) => {
+    setProductToDelete(id);
+  };
+
+  const handleDelete = async () => {
+    if (productToDelete) {
+      try {
+        const res = await fetch(`/api/products/${productToDelete}`, { method: 'DELETE' });
+        if (res.ok) {
+          setToastMessage('Produk berhasil dihapus!');
+          setTimeout(() => setToastMessage(''), 3000);
+          fetchProducts();
+        } else {
+          alert('Gagal menghapus produk');
+        }
+      } catch (error) {
+        console.error('Failed to delete product', error);
+      } finally {
+        setProductToDelete(null);
+      }
+    }
+  };
+
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setEditingProduct(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch(`/api/products/${editingProduct.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editingProduct)
+      });
+      if (res.ok) {
+        setEditingProduct(null);
+        setToastMessage('Produk berhasil diperbarui!');
+        setTimeout(() => setToastMessage(''), 3000);
+        fetchProducts();
+      } else {
+        const err = await res.json();
+        alert('Gagal mengedit: ' + err.error);
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Terjadi kesalahan saat mengedit');
     }
   };
 
@@ -111,14 +158,14 @@ export default function ProductTable() {
                     <button 
                       style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', borderRadius: '8px', background: '#F3F4F6', color: '#4B5563', cursor: 'pointer', border: 'none' }}
                       title="Edit Produk"
-                      onClick={() => alert('Fitur Edit belum diimplementasikan di MVP')}
+                      onClick={() => setEditingProduct(product)}
                     >
                       <Edit2 size={18} />
                     </button>
                     <button 
                       style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', borderRadius: '8px', background: '#FEE2E2', color: '#DC2626', cursor: 'pointer', border: 'none' }}
                       title="Hapus Produk"
-                      onClick={() => handleDelete(product.id)}
+                      onClick={() => confirmDelete(product.id)}
                     >
                       <Trash2 size={18} />
                     </button>
@@ -136,6 +183,105 @@ export default function ProductTable() {
           </tbody>
         </table>
       </div>
+
+      {/* Edit Product Modal */}
+      {editingProduct && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+          <div style={{ background: 'white', padding: '32px', borderRadius: '12px', width: '100%', maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto' }}>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '24px' }}>Edit Produk</h2>
+            <form onSubmit={handleEditSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ display: 'flex', gap: '16px' }}>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <label style={{ fontWeight: 600, fontSize: '0.9rem' }}>Kode Produk</label>
+                  <input type="text" name="product_code" value={editingProduct.product_code} onChange={handleEditChange} required style={{ padding: '10px', borderRadius: '8px', border: '1px solid #CBD5E1', width: '100%' }} />
+                </div>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <label style={{ fontWeight: 600, fontSize: '0.9rem' }}>Nama Produk</label>
+                  <input type="text" name="name" value={editingProduct.name} onChange={handleEditChange} required style={{ padding: '10px', borderRadius: '8px', border: '1px solid #CBD5E1', width: '100%' }} />
+                </div>
+              </div>
+              
+              <div style={{ display: 'flex', gap: '16px' }}>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <label style={{ fontWeight: 600, fontSize: '0.9rem' }}>Kategori</label>
+                  <input type="text" name="category" value={editingProduct.category} onChange={handleEditChange} required style={{ padding: '10px', borderRadius: '8px', border: '1px solid #CBD5E1', width: '100%' }} />
+                </div>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <label style={{ fontWeight: 600, fontSize: '0.9rem' }}>Stok</label>
+                  <input type="number" name="stock" value={editingProduct.stock} onChange={handleEditChange} required style={{ padding: '10px', borderRadius: '8px', border: '1px solid #CBD5E1', width: '100%' }} />
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '16px' }}>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <label style={{ fontWeight: 600, fontSize: '0.9rem' }}>Harga Modal</label>
+                  <input type="number" name="cost_price" value={editingProduct.cost_price} onChange={handleEditChange} required style={{ padding: '10px', borderRadius: '8px', border: '1px solid #CBD5E1', width: '100%' }} />
+                </div>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <label style={{ fontWeight: 600, fontSize: '0.9rem' }}>Harga Jual</label>
+                  <input type="number" name="selling_price" value={editingProduct.selling_price} onChange={handleEditChange} required style={{ padding: '10px', borderRadius: '8px', border: '1px solid #CBD5E1', width: '100%' }} />
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '16px' }}>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <label style={{ fontWeight: 600, fontSize: '0.9rem' }}>URL Foto Produk</label>
+                  <input type="text" name="image_url" value={editingProduct.image_url} onChange={handleEditChange} style={{ padding: '10px', borderRadius: '8px', border: '1px solid #CBD5E1', width: '100%' }} />
+                </div>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <label style={{ fontWeight: 600, fontSize: '0.9rem' }}>No WhatsApp Penjual</label>
+                  <input type="text" name="seller_phone" value={editingProduct.seller_phone || ''} onChange={handleEditChange} placeholder="Contoh: 6281234567890" style={{ padding: '10px', borderRadius: '8px', border: '1px solid #CBD5E1', width: '100%' }} />
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '16px', marginTop: '16px' }}>
+                <button type="button" onClick={() => setEditingProduct(null)} style={{ flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid #CBD5E1', background: 'transparent', cursor: 'pointer', fontWeight: 'bold', color: '#475569' }}>
+                  Batal
+                </button>
+                <button type="submit" style={{ flex: 1, padding: '12px', borderRadius: '8px', border: 'none', background: '#3B82F6', color: 'white', cursor: 'pointer', fontWeight: 'bold' }}>
+                  Simpan Perubahan
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div style={{ position: 'fixed', bottom: '24px', right: '24px', background: '#10B981', color: 'white', padding: '16px 24px', borderRadius: '8px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', fontWeight: 'bold', zIndex: 1001, animation: 'fadeIn 0.3s ease' }}>
+          {toastMessage}
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {productToDelete && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, animation: 'fadeIn 0.2s ease', backdropFilter: 'blur(4px)' }}>
+          <div style={{ background: 'white', padding: '32px', borderRadius: '16px', width: '100%', maxWidth: '400px', textAlign: 'center', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' }}>
+            <div style={{ width: '80px', height: '80px', background: '#FEE2E2', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto', marginBottom: '24px' }}>
+              <Trash2 size={40} color="#DC2626" />
+            </div>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1E293B', marginBottom: '12px' }}>Hapus Produk?</h2>
+            <p style={{ color: '#64748B', marginBottom: '32px', lineHeight: '1.5' }}>
+              Apakah Anda yakin ingin menghapus produk ini? Tindakan ini tidak dapat dibatalkan.
+            </p>
+            <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
+              <button 
+                onClick={() => setProductToDelete(null)}
+                style={{ flex: 1, padding: '12px', background: '#F1F5F9', color: '#475569', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', transition: 'background 0.2s' }}
+              >
+                Batal
+              </button>
+              <button 
+                onClick={handleDelete}
+                style={{ flex: 1, padding: '12px', background: '#DC2626', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', transition: 'background 0.2s' }}
+              >
+                Ya, Hapus
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

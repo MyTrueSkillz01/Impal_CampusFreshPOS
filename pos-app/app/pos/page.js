@@ -5,9 +5,13 @@ import { useRouter } from 'next/navigation';
 import { LogOut, ShoppingCart, Trash2, CreditCard, Package } from 'lucide-react';
 import styles from './pos.module.css';
 import ProductTable from './components/ProductTable';
+import Bills from './components/Bills';
+import Settlement from './components/Settlement';
+import Report from './components/Report';
+import Setting from './components/Setting';
 
 const MENU_ITEMS = [
-  'Daftar Menu', 'Daftar Produk', 'Order List', 'Bills', 'History', 'Settlement', 'Report', 'Setting'
+  'Daftar Menu', 'Daftar Produk', 'Bills', 'Settlement', 'Report', 'Setting'
 ];
 
 export default function PosPage() {
@@ -109,6 +113,14 @@ export default function PosPage() {
       {/* Main Content (Products or Table) */}
       {activeMenu === 'Daftar Produk' ? (
         <ProductTable />
+      ) : activeMenu === 'Bills' ? (
+        <Bills />
+      ) : activeMenu === 'Settlement' ? (
+        <Settlement />
+      ) : activeMenu === 'Report' ? (
+        <Report />
+      ) : activeMenu === 'Setting' ? (
+        <Setting />
       ) : (
         <div className={styles.mainContent}>
           <div className={styles.header}>

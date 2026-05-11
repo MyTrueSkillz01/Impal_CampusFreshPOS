@@ -16,9 +16,17 @@ export async function GET(request) {
     // Since existing users don't have roles, we skip strict role checks, 
     // but a real app would strictly check it.
 
+    // If not Admin, hide passwords
     const cashiers = await db.all('SELECT id, username, name, password, role, status FROM cashiers ORDER BY id DESC');
     
-    return NextResponse.json(cashiers);
+    const formattedCashiers = cashiers.map(c => {
+      if (session.user.role !== 'Admin') {
+        return { ...c, password: '' };
+      }
+      return c;
+    });
+    
+    return NextResponse.json(formattedCashiers);
   } catch (error) {
     console.error('Error fetching cashiers:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
@@ -30,6 +38,10 @@ export async function POST(request) {
     const session = await getSession();
     if (!session || !session.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (session.user.role !== 'Admin') {
+      return NextResponse.json({ error: 'Forbidden: Admin only' }, { status: 403 });
     }
 
     const { name, username, password, role, status } = await request.json();

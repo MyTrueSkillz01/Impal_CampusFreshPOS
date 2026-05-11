@@ -6,6 +6,7 @@ import styles from './Setting.module.css';
 
 export default function Setting() {
   const [cashiers, setCashiers] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   
@@ -27,8 +28,21 @@ export default function Setting() {
   });
 
   useEffect(() => {
+    fetchCurrentUser();
     fetchCashiers();
   }, []);
+
+  const fetchCurrentUser = async () => {
+    try {
+      const res = await fetch('/api/me');
+      if (res.ok) {
+        const data = await res.json();
+        setCurrentUser(data.user);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const fetchCashiers = async () => {
     try {
@@ -159,6 +173,8 @@ export default function Setting() {
     }
   };
 
+  const isAdmin = currentUser?.role === 'Admin';
+
   if (isLoading && cashiers.length === 0) {
     return <div style={{ padding: '24px' }}>Memuat data...</div>;
   }
@@ -170,12 +186,14 @@ export default function Setting() {
           <h1 className={styles.title}>Setting / Manajemen Kasir</h1>
           <p style={{ color: 'var(--text-muted)' }}>Kelola data karyawan dan akses sistem kasir</p>
         </div>
-        <div className={styles.headerActions}>
-          <button className={styles.btnAdd} onClick={() => handleOpenModal()}>
-            <Plus size={20} />
-            Tambah Karyawan
-          </button>
-        </div>
+        {isAdmin && (
+          <div className={styles.headerActions}>
+            <button className={styles.btnAdd} onClick={() => handleOpenModal()}>
+              <Plus size={20} />
+              Tambah Karyawan
+            </button>
+          </div>
+        )}
       </div>
 
       <div className={styles.tableSection}>
@@ -188,7 +206,7 @@ export default function Setting() {
               <th>Password</th>
               <th>Role</th>
               <th>Status</th>
-              <th>Aksi</th>
+              {isAdmin && <th>Aksi</th>}
             </tr>
           </thead>
           <tbody>
@@ -199,16 +217,18 @@ export default function Setting() {
                 <td>{cashier.username}</td>
                 <td>
                   <div className={styles.pwCell}>
-                    <span style={{ fontFamily: 'monospace', fontSize: '1.1rem', letterSpacing: visiblePasswords[cashier.id] ? '0' : '2px' }}>
-                      {visiblePasswords[cashier.id] ? decodePassword(cashier.password) : '********'}
+                    <span style={{ fontFamily: 'monospace', fontSize: '1.1rem', letterSpacing: isAdmin && visiblePasswords[cashier.id] ? '0' : '2px' }}>
+                      {isAdmin ? (visiblePasswords[cashier.id] ? decodePassword(cashier.password) : '********') : '***'}
                     </span>
-                    <button 
-                      className={styles.btnTogglePw} 
-                      onClick={() => togglePasswordVisibility(cashier.id)}
-                      title={visiblePasswords[cashier.id] ? "Sembunyikan" : "Tampilkan"}
-                    >
-                      {visiblePasswords[cashier.id] ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </button>
+                    {isAdmin && (
+                      <button 
+                        className={styles.btnTogglePw} 
+                        onClick={() => togglePasswordVisibility(cashier.id)}
+                        title={visiblePasswords[cashier.id] ? "Sembunyikan" : "Tampilkan"}
+                      >
+                        {visiblePasswords[cashier.id] ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    )}
                   </div>
                 </td>
                 <td>
@@ -221,16 +241,18 @@ export default function Setting() {
                     {cashier.status || 'Aktif'}
                   </span>
                 </td>
-                <td>
-                  <div className={styles.actionCell}>
-                    <button className={styles.btnEdit} onClick={() => handleOpenModal(cashier)} title="Edit">
-                      <Edit2 size={16} />
-                    </button>
-                    <button className={styles.btnDelete} onClick={() => confirmDelete(cashier)} title="Hapus">
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                </td>
+                {isAdmin && (
+                  <td>
+                    <div className={styles.actionCell}>
+                      <button className={styles.btnEdit} onClick={() => handleOpenModal(cashier)} title="Edit">
+                        <Edit2 size={16} />
+                      </button>
+                      <button className={styles.btnDelete} onClick={() => confirmDelete(cashier)} title="Hapus">
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </td>
+                )}
               </tr>
             ))}
             {cashiers.length === 0 && (

@@ -9,6 +9,10 @@ export async function PUT(request, { params }) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    if (session.user.role !== 'Admin') {
+      return NextResponse.json({ error: 'Forbidden: Admin only' }, { status: 403 });
+    }
+
     const { id } = await params;
     const { name, username, password, role, status } = await request.json();
 
@@ -51,6 +55,10 @@ export async function DELETE(request, { params }) {
     const session = await getSession();
     if (!session || !session.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (session.user.role !== 'Admin') {
+      return NextResponse.json({ error: 'Forbidden: Admin only' }, { status: 403 });
     }
 
     const { id } = await params;

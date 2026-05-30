@@ -177,7 +177,6 @@
   font-size: 0.9rem;
   cursor: pointer;
   transition: background 0.2s;
-  pointer-events: none; /* Let the card handle the click */
 }
 
 /* Sidebar / Cart Cart styling */

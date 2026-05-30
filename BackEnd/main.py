@@ -103,13 +103,14 @@ def init_db():
         ]
         cursor.executemany("INSERT INTO cashiers (username, password, name) VALUES (?, ?, ?)", cashiers)
 
-    # Seed products
+    # Seed products (Perbaikan Duplikasi String SonarQube)
     if cursor.execute("SELECT COUNT(*) FROM products").fetchone()[0] == 0:
+        DEFAULT_IMG = 'https://via.placeholder.com/150'
         products = [
-            ('P001', 'https://via.placeholder.com/150', 'Nametag PKKMB', 'Atribut', 100, 10000, 15000, 1, '6281234567890'),
-            ('P002', 'https://via.placeholder.com/150', 'Buku Panduan PKKMB', 'Buku', 50, 20000, 35000, 1, '6281234567890'),
-            ('P003', 'https://via.placeholder.com/150', 'Pin Logo Kampus', 'Atribut', 200, 5000, 10000, 1, '6281234567890'),
-            ('P004', 'https://via.placeholder.com/150', 'Buku Tulis Eksekutif', 'Alat Tulis', 150, 15000, 25000, 1, '6281234567890')
+            ('P001', DEFAULT_IMG, 'Nametag PKKMB', 'Atribut', 100, 10000, 15000, 1, '6281234567890'),
+            ('P002', DEFAULT_IMG, 'Buku Panduan PKKMB', 'Buku', 50, 20000, 35000, 1, '6281234567890'),
+            ('P003', DEFAULT_IMG, 'Pin Logo Kampus', 'Atribut', 200, 5000, 10000, 1, '6281234567890'),
+            ('P004', DEFAULT_IMG, 'Buku Tulis Eksekutif', 'Alat Tulis', 150, 15000, 25000, 1, '6281234567890')
         ]
         cursor.executemany("""
             INSERT INTO products (product_code, image_url, name, category, stock, cost_price, selling_price, is_active, seller_phone)
@@ -142,30 +143,13 @@ class ProductCreate(BaseModel):
 def root():
     return {"message": "CampusFreshPOS API is running!", "status": "Online"}
 
-@app.post("/api/login")
-def login(body: LoginRequest, response: Response):
-    conn = get_db()
-    user = conn.execute(
-        "SELECT id, username, name FROM cashiers WHERE username = ? AND password = ?",
-        (body.username, body.password)
-    ).fetchone()
-    conn.close()
-
-    if not user:
-        raise HTTPException(status_code=401, detail="Username atau password salah")
-
-    token = str(uuid.uuid4())
-    conn = get_db()
-    conn.execute("INSERT INTO sessions (token, user_id, username, name) VALUES (?, ?, ?, ?)",
-                 (token, user["id"], user["username"], user["name"]))
-    conn.commit()
-    conn.close()
-    return {"success": True, "user": {"id": user["id"], "username": user["username"], "name": user["name"]}}
-
-@app.post("/api/login")
+# Perbaikan Dokumentasi Exception SonarQube
+@app.post("/api/login", responses={
+    401: {"description": "Username atau password salah"},
+    403: {"description": "Akun kasir ini telah dinonaktifkan"}
+})
 def login(body: LoginRequest):
     conn = get_db()
-    # (Pastikan tabel cashiers di Azure sudah punya kolom 'status' dan 'role')
     user = conn.execute("SELECT id, username, name, role, status FROM cashiers WHERE username = ? AND password = ?",
                         (body.username, body.password)).fetchone()
     conn.close()
@@ -177,6 +161,8 @@ def login(body: LoginRequest):
     if user["status"] == "Nonaktif":
         raise HTTPException(status_code=403, detail="Akun kasir ini telah dinonaktifkan")
 
+    # (Logika pembuatan sesi token JWT seharusnya di sini jika dipakai)
+    
     return {"success": True, "user": {"id": user["id"], "username": user["username"], "name": user["name"], "role": user["role"], "status": user["status"]}}
 
 @app.post("/api/logout")
@@ -191,7 +177,8 @@ def get_products():
     conn.close()
     return [dict(p) for p in products]
 
-@app.post("/api/products")
+# Perbaikan Dokumentasi Exception SonarQube
+@app.post("/api/products", responses={400: {"description": "Product code sudah ada"}})
 def create_product(body: ProductCreate):
     conn = get_db()
     try:
@@ -232,7 +219,8 @@ def get_transactions():
     conn.close()
     return [dict(t) for t in tx]
 
-@app.post("/api/transactions")
+# Perbaikan Dokumentasi Exception SonarQube
+@app.post("/api/transactions", responses={400: {"description": "Cart is empty atau Kasir sedang ditutup"}})
 async def create_transaction(request: Request):
     body = await request.json()
     cart = body.get("cart", [])
@@ -274,12 +262,13 @@ async def create_transaction(request: Request):
     return {"success": True, "id": new_id, "invoice_number": invoice_number}
 
 # ─── Report & Settlement ────────────────────────────────────────
+# Perbaikan Naming Convention (start_date, end_date) SonarQube
 @app.get("/api/report")
-def get_report(startDate: str, endDate: str):
+def get_report(start_date: str, end_date: str):
     conn = get_db()
     transactions = conn.execute("""
         SELECT * FROM transactions WHERE date(created_at) BETWEEN ? AND ? ORDER BY id DESC
-    """, (startDate, endDate)).fetchall()
+    """, (start_date, end_date)).fetchall()
 
     total_revenue = 0
     total_hpp = 0
@@ -321,7 +310,8 @@ def get_settlement_status():
         "itemDetails": []
     }
 
-@app.post("/api/settlement")
+# Perbaikan Dokumentasi Exception SonarQube
+@app.post("/api/settlement", responses={400: {"description": "Invalid action"}})
 async def toggle_settlement(request: Request):
     body = await request.json()
     action = body.get("action")

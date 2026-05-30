@@ -17,6 +17,7 @@ export async function middleware(request) {
       await jwtVerify(session, key, { algorithms: ['HS256'] });
     } catch (err) {
       // Invalid token
+      console.error("JWT Verify error on /pos:", err);
       return NextResponse.redirect(new URL('/login', request.url));
     }
   }
@@ -28,6 +29,7 @@ export async function middleware(request) {
          await jwtVerify(session, key, { algorithms: ['HS256'] });
          return NextResponse.redirect(new URL('/pos', request.url));
        } catch (err) {
+         console.error("JWT Verify error on /:", err);
          return NextResponse.redirect(new URL('/login', request.url));
        }
     } else {

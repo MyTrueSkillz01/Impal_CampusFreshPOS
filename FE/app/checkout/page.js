@@ -181,7 +181,7 @@ export default function CheckoutPage() {
     return (
       <div className={styles.container}>
         <div className={styles.successCard}>
-          <div style={{ width: '80px', height: '80px', background: '#D1FAE5', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto', marginBottom: '24px' }}>
+          <div style={{ width: '80px', height: '80px', background: '#D1FAE5', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px auto' }}>
             <CheckCircle size={48} color="#10B981" />
           </div>
           <h2 className={styles.title} style={{ fontSize: '1.8rem', marginBottom: '12px' }}>Tagihan Dibuat!</h2>

@@ -9,7 +9,6 @@ import uuid
 
 app = FastAPI(title="CampusFreshPOS API")
 
-# CORS - izinkan frontend Next.js akses backend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -31,7 +30,6 @@ def init_db():
     conn = get_db()
     cursor = conn.cursor()
 
-    # Buat tabel yang sudah ada + tabel BARU (transactions, settlements, store_settings)
     cursor.executescript("""
         CREATE TABLE IF NOT EXISTS cashiers (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -103,7 +101,7 @@ def init_db():
         ]
         cursor.executemany("INSERT INTO cashiers (username, password, name) VALUES (?, ?, ?)", cashiers)
 
-    # Seed products (Perbaikan Duplikasi String SonarQube)
+    # Seed products
     if cursor.execute("SELECT COUNT(*) FROM products").fetchone()[0] == 0:
         DEFAULT_IMG = 'https://via.placeholder.com/150'
         products = [
@@ -143,7 +141,6 @@ class ProductCreate(BaseModel):
 def root():
     return {"message": "CampusFreshPOS API is running!", "status": "Online"}
 
-# Perbaikan Dokumentasi Exception SonarQube
 @app.post("/api/login", responses={
     401: {"description": "Username atau password salah"},
     403: {"description": "Akun kasir ini telah dinonaktifkan"}
@@ -177,7 +174,6 @@ def get_products():
     conn.close()
     return [dict(p) for p in products]
 
-# Perbaikan Dokumentasi Exception SonarQube
 @app.post("/api/products", responses={400: {"description": "Product code sudah ada"}})
 def create_product(body: ProductCreate):
     conn = get_db()
@@ -219,7 +215,6 @@ def get_transactions():
     conn.close()
     return [dict(t) for t in tx]
 
-# Perbaikan Dokumentasi Exception SonarQube
 @app.post("/api/transactions", responses={400: {"description": "Cart is empty atau Kasir sedang ditutup"}})
 async def create_transaction(request: Request):
     body = await request.json()
@@ -262,7 +257,6 @@ async def create_transaction(request: Request):
     return {"success": True, "id": new_id, "invoice_number": invoice_number}
 
 # ─── Report & Settlement ────────────────────────────────────────
-# Perbaikan Naming Convention (start_date, end_date) SonarQube
 @app.get("/api/report")
 def get_report(start_date: str, end_date: str):
     conn = get_db()
@@ -292,7 +286,7 @@ def get_report(start_date: str, end_date: str):
             "totalFinalRevenue": total_revenue
         },
         "transactions": [dict(t) for t in transactions],
-        "itemDetails": [] # Disederhanakan untuk keperluan demo
+        "itemDetails": []
     }
 
 @app.get("/api/settlement")
@@ -310,7 +304,6 @@ def get_settlement_status():
         "itemDetails": []
     }
 
-# Perbaikan Dokumentasi Exception SonarQube
 @app.post("/api/settlement", responses={400: {"description": "Invalid action"}})
 async def toggle_settlement(request: Request):
     body = await request.json()

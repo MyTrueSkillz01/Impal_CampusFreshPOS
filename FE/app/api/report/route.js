@@ -24,7 +24,7 @@ export async function GET(request) {
     }
 
     // 3. Tembak API FastAPI kamu! (Tidak pakai sqlite3/getDb lagi)
-    const response = await fetch(`${API_URL}/api/report?startDate=${startDate}&endDate=${endDate}`, {
+    const response = await fetch(`${API_URL}/api/report?start_date=${startDate}&end_date=${endDate}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

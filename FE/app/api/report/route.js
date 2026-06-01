@@ -16,12 +16,16 @@ export async function GET(request) {
 
     // 2. Ambil parameter tanggal dari URL
     const { searchParams } = new URL(request.url);
-    const startDate = searchParams.get('startDate');
-    const endDate = searchParams.get('endDate');
+    let startDate = searchParams.get('startDate');
+    let endDate = searchParams.get('endDate');
 
-    if (!startDate || !endDate) {
-      return NextResponse.json({ error: 'startDate and endDate are required' }, { status: 400 });
-    }
+  if (!startDate || startDate === 'Semua' || startDate === 'null' || startDate === '') {
+    startDate = '2000-01-01';
+  }
+
+  if (!endDate || endDate === 'null' || endDate === '') {
+    endDate = new Date().toISOString().split('T')[0];
+  }
 
     // 3. Tembak API FastAPI kamu! (Tidak pakai sqlite3/getDb lagi)
     const response = await fetch(`${API_URL}/api/report?start_date=${startDate}&end_date=${endDate}`, {

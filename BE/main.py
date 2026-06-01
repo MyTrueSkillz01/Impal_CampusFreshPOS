@@ -136,6 +136,21 @@ class ProductCreate(BaseModel):
     is_active: Optional[bool] = True
     seller_phone: Optional[str] = ''
 
+# Model Pydantic Baru untuk Manajemen Kasir
+class CashierBase(BaseModel):
+    username: str
+    password: str
+    name: str
+    role: Optional[str] = 'Kasir'
+    status: Optional[str] = 'Aktif'
+
+class CashierUpdate(BaseModel):
+    username: str
+    password: Optional[str] = ""
+    name: str
+    role: str
+    status: str
+
 # ─── Auth Endpoints ────────────────────────────────────────────────
 @app.get("/")
 def root():
@@ -157,13 +172,59 @@ def login(body: LoginRequest):
     # Cek jika akun nonaktif
     if user["status"] == "Nonaktif":
         raise HTTPException(status_code=403, detail="Akun kasir ini telah dinonaktifkan")
-
-    # (Logika pembuatan sesi token JWT seharusnya di sini jika dipakai)
     
     return {"success": True, "user": {"id": user["id"], "username": user["username"], "name": user["name"], "role": user["role"], "status": user["status"]}}
 
 @app.post("/api/logout")
 def logout():
+    return {"success": True}
+
+# ─── Cashiers / Users Endpoints ─────────────────────────────────────
+@app.get("/api/cashiers")
+def get_cashiers():
+    conn = get_db()
+    users = conn.execute("SELECT id, name, username, role, status FROM cashiers").fetchall()
+    conn.close()
+    return [dict(u) for u in users]
+
+@app.post("/api/cashiers")
+def create_cashier(body: CashierBase):
+    conn = get_db()
+    try:
+        conn.execute("""
+            INSERT INTO cashiers (username, password, name, role, status)
+            VALUES (?, ?, ?, ?, ?)
+        """, (body.username, body.password, body.name, body.role, body.status))
+        conn.commit()
+    except sqlite3.IntegrityError:
+        conn.close()
+        raise HTTPException(status_code=400, detail="Username sudah digunakan")
+    finally:
+        conn.close()
+    return {"success": True}
+
+@app.put("/api/cashiers/{id}")
+def update_cashier(id: int, body: CashierUpdate):
+    conn = get_db()
+    # Jika password dikosongkan saat edit, jangan update passwordnya
+    if body.password and body.password.strip() != "":
+        conn.execute("""
+            UPDATE cashiers SET username=?, password=?, name=?, role=?, status=? WHERE id=?
+        """, (body.username, body.password, body.name, body.role, body.status, id))
+    else:
+        conn.execute("""
+            UPDATE cashiers SET username=?, name=?, role=?, status=? WHERE id=?
+        """, (body.username, body.name, body.role, body.status, id))
+    conn.commit()
+    conn.close()
+    return {"success": True}
+
+@app.delete("/api/cashiers/{id}")
+def delete_cashier(id: int):
+    conn = get_db()
+    conn.execute("DELETE FROM cashiers WHERE id = ?", (id,))
+    conn.commit()
+    conn.close()
     return {"success": True}
 
 # ─── Products Endpoints ─────────────────────────────────────────────
@@ -296,12 +357,36 @@ def get_settlement_status():
     tx = conn.execute("SELECT * FROM transactions WHERE date(created_at) = date('now', 'localtime')").fetchall()
     conn.close()
 
-    total_revenue = sum([t["total_amount"] for t in tx])
+    total_revenue = 0
+    item_summary = {}
+
+    # Logika yang diperbarui agar tabel settlement memunculkan item
+    for t in tx:
+        total_revenue += t["total_amount"]
+        items = json.loads(t["items"])
+        for item in items:
+            name = item.get("name", "Unknown Product")
+            qty = item.get("qty", 0)
+            price = item.get("selling_price", 0)
+            subtotal = qty * price
+            
+            if name in item_summary:
+                item_summary[name]["qty"] += qty
+                item_summary[name]["total"] += subtotal
+            else:
+                item_summary[name] = {
+                    "name": name,
+                    "qty": qty,
+                    "total": subtotal
+                }
+
+    item_details_list = list(item_summary.values())
+
     return {
         "isOpen": True if status and status["value"] == 'true' else False,
         "totalTransactions": len(tx),
         "totalRevenue": total_revenue,
-        "itemDetails": []
+        "itemDetails": item_details_list
     }
 
 @app.post("/api/settlement", responses={400: {"description": "Invalid action"}})

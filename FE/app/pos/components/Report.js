@@ -199,7 +199,7 @@ export default function Report() {
                     <tbody>
                       {reportData.transactions.map((tx) => (
                         <tr key={tx.id}>
-                          <td style={{ fontWeight: 600 }}>{tx.invoice_number}</td>
+                          <td style={{ fontWeight: 600, fontSize: '0.85rem' }}>{tx.invoice_number}</td>
                           <td>{new Date(tx.created_at.includes('Z') ? tx.created_at : tx.created_at + 'Z').toLocaleString('id-ID')}</td>
                           <td>{tx.cashier_name}</td>
                           <td style={{ fontWeight: 600 }}>Rp {tx.total_amount.toLocaleString('id-ID')}</td>

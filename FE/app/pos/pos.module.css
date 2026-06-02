@@ -14,18 +14,19 @@
 }
 
 .logoContainer {
-  padding: 24px;
+  padding: 20px 16px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   border-bottom: 1px solid var(--border-color);
 }
 
 .logoText {
   color: #DC2626;
   font-weight: 700;
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   letter-spacing: -0.5px;
+  white-space: nowrap;
 }
 
 .iconBox {

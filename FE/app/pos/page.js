@@ -86,8 +86,8 @@ export default function PosPage() {
       {/* Left Navigation Sidebar */}
       <div className={styles.navSidebar}>
          <div className={styles.logoContainer}>
-            <div style={{ marginRight: '8px' }}>
-               <img src="/logo.png" alt="Logo PKKMB" style={{ width: '32px', height: '32px', objectFit: 'contain' }} />
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+               <img src="/logo.png" alt="Logo PKKMB" style={{ width: '28px', height: '28px', objectFit: 'contain' }} />
             </div>
             <span className={styles.logoText} style={{ color: '#DC2626' }}>Campus<span style={{ color: '#FACC15' }}>Fresh</span>POS</span>
          </div>

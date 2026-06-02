@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { Lock, Unlock, CheckCircle, AlertTriangle, X } from 'lucide-react';
 import styles from './Settlement.module.css';
 
 export default function Settlement() {
@@ -11,6 +12,15 @@ export default function Settlement() {
     itemDetails: []
   });
   const [loading, setLoading] = useState(true);
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, action: null });
+  const [notification, setNotification] = useState(null);
+
+  const showToast = (type, message) => {
+    setNotification({ type, message });
+    setTimeout(() => {
+      setNotification(prev => (prev && prev.message === message ? null : prev));
+    }, 3000);
+  };
 
   const fetchSettlementData = async () => {
     try {
@@ -20,7 +30,7 @@ export default function Settlement() {
       setData(json);
     } catch (err) {
       console.error(err);
-      alert('Gagal mengambil data settlement');
+      showToast('error', 'Gagal mengambil data settlement');
     } finally {
       setLoading(false);
     }
@@ -34,10 +44,13 @@ export default function Settlement() {
     window.print();
   };
 
-  const toggleStoreStatus = async (action) => {
-    if (!confirm(`Apakah Anda yakin ingin ${action === 'close' ? 'menutup' : 'membuka'} kasir?`)) {
-      return;
-    }
+  const triggerStoreStatusConfirm = (action) => {
+    setConfirmModal({ isOpen: true, action });
+  };
+
+  const executeStoreStatus = async () => {
+    const action = confirmModal.action;
+    setConfirmModal({ isOpen: false, action: null });
     
     try {
       setLoading(true);
@@ -52,10 +65,10 @@ export default function Settlement() {
       
       // Refresh data
       await fetchSettlementData();
-      alert(`Kasir berhasil ${action === 'close' ? 'ditutup' : 'dibuka'}.`);
+      showToast('success', `Kasir berhasil ${action === 'close' ? 'ditutup' : 'dibuka'}.`);
     } catch (err) {
       console.error(err);
-      alert(err.message || 'Terjadi kesalahan');
+      showToast('error', err.message || 'Terjadi kesalahan');
       setLoading(false);
     }
   };
@@ -141,14 +154,14 @@ export default function Settlement() {
           <div className={styles.actionContainer}>
             <button 
               className={`${styles.actionBtn} ${!data.isOpen ? styles.disabledBtn : styles.closeBtn}`}
-              onClick={() => toggleStoreStatus('close')}
+              onClick={() => triggerStoreStatusConfirm('close')}
               disabled={!data.isOpen || loading}
             >
               Tutup Kasir
             </button>
             <button 
               className={`${styles.actionBtn} ${data.isOpen ? styles.disabledBtn : styles.openBtn}`}
-              onClick={() => toggleStoreStatus('open')}
+              onClick={() => triggerStoreStatusConfirm('open')}
               disabled={data.isOpen || loading}
             >
               Buka Kasir
@@ -167,6 +180,58 @@ export default function Settlement() {
           )}
         </div>
       </div>
+
+      {/* Custom Confirmation Modal */}
+      {confirmModal.isOpen && (
+        <div className={styles.modalOverlay} onClick={() => setConfirmModal({ isOpen: false, action: null })}>
+          <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+            <div className={styles.modalBody}>
+              <div className={`${styles.iconContainer} ${confirmModal.action === 'close' ? styles.iconClose : styles.iconOpen}`}>
+                {confirmModal.action === 'close' ? <Lock size={32} /> : <Unlock size={32} />}
+              </div>
+              <h3 className={styles.modalTitle}>
+                {confirmModal.action === 'close' ? 'Tutup Kasir?' : 'Buka Kasir?'}
+              </h3>
+              <p className={styles.modalText}>
+                {confirmModal.action === 'close' 
+                  ? 'Apakah Anda yakin ingin menutup kasir? Transaksi penjualan baru tidak akan dapat diproses sampai kasir dibuka kembali.'
+                  : 'Apakah Anda yakin ingin membuka kasir? Transaksi penjualan baru akan dapat mulai dilakukan.'
+                }
+              </p>
+            </div>
+            <div className={styles.modalFooter}>
+              <button 
+                className={styles.btnCancel} 
+                onClick={() => setConfirmModal({ isOpen: false, action: null })}
+              >
+                Batal
+              </button>
+              <button 
+                className={`${styles.btnSubmit} ${confirmModal.action === 'close' ? styles.btnDanger : styles.btnSuccess}`}
+                onClick={executeStoreStatus}
+              >
+                {confirmModal.action === 'close' ? 'Ya, Tutup Kasir' : 'Ya, Buka Kasir'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Custom Toast Notification */}
+      {notification && (
+        <div 
+          className={`${styles.toast} ${notification.type === 'success' ? styles.toastSuccess : styles.toastError}`}
+          onClick={() => setNotification(null)}
+        >
+          <div className={styles.toastIcon}>
+            {notification.type === 'success' ? <CheckCircle size={20} /> : <AlertTriangle size={20} />}
+          </div>
+          <div className={styles.toastMessage}>{notification.message}</div>
+          <button className={styles.toastCloseBtn}>
+            <X size={16} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

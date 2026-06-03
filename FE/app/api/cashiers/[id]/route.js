@@ -5,7 +5,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 export async function GET(request, { params }) {
     try {
-        const { id } = params;
+        const { id } = await params;
         const response = await fetch(`${API_URL}/api/cashiers/${id}`);
         const data = await response.json();
         return NextResponse.json(data, { status: response.status });
@@ -16,7 +16,7 @@ export async function GET(request, { params }) {
 
 export async function PUT(request, { params }) {
     try {
-        const { id } = params;
+        const { id } = await params;
         const body = await request.json();
         const response = await fetch(`${API_URL}/api/cashiers/${id}`, {
             method: 'PUT',
@@ -32,7 +32,7 @@ export async function PUT(request, { params }) {
 
 export async function DELETE(request, { params }) {
     try {
-        const { id } = params;
+        const { id } = await params;
         const response = await fetch(`${API_URL}/api/cashiers/${id}`, { method: 'DELETE' });
         const data = await response.json();
         return NextResponse.json(data, { status: response.status });

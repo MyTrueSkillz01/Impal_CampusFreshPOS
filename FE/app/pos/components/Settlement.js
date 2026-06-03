@@ -51,7 +51,7 @@ export default function Settlement() {
   const executeStoreStatus = async () => {
     const action = confirmModal.action;
     setConfirmModal({ isOpen: false, action: null });
-    
+
     try {
       setLoading(true);
       const res = await fetch('/api/settlement', {
@@ -60,9 +60,9 @@ export default function Settlement() {
         body: JSON.stringify({ action })
       });
       const result = await res.json();
-      
+
       if (!res.ok) throw new Error(result.error);
-      
+
       // Refresh data
       await fetchSettlementData();
       showToast('success', `Kasir berhasil ${action === 'close' ? 'ditutup' : 'dibuka'}.`);
@@ -140,26 +140,26 @@ export default function Settlement() {
 
         <div className={styles.card}>
           <div className={styles.cardLabel}>Ringkasan Keuangan</div>
-          
+
           <div className={styles.summaryRow}>
             <span>Subtotal Penjualan</span>
             <span>Rp {data.totalRevenue.toLocaleString('id-ID')}</span>
           </div>
-          
+
           <div className={styles.totalRow}>
             <span className={styles.totalLabel}>Total Pendapatan</span>
             <span>Rp {data.totalRevenue.toLocaleString('id-ID')}</span>
           </div>
 
           <div className={styles.actionContainer}>
-            <button 
+            <button
               className={`${styles.actionBtn} ${!data.isOpen ? styles.disabledBtn : styles.closeBtn}`}
               onClick={() => triggerStoreStatusConfirm('close')}
               disabled={!data.isOpen || loading}
             >
               Tutup Kasir
             </button>
-            <button 
+            <button
               className={`${styles.actionBtn} ${data.isOpen ? styles.disabledBtn : styles.openBtn}`}
               onClick={() => triggerStoreStatusConfirm('open')}
               disabled={data.isOpen || loading}
@@ -167,7 +167,7 @@ export default function Settlement() {
               Buka Kasir
             </button>
           </div>
-          
+
           {!data.isOpen && (
             <div style={{ marginTop: '16px', fontSize: '0.85rem', color: '#DC2626', textAlign: 'center' }}>
               Status: Kasir Ditutup (Transaksi tidak dapat dilakukan)
@@ -193,20 +193,20 @@ export default function Settlement() {
                 {confirmModal.action === 'close' ? 'Tutup Kasir?' : 'Buka Kasir?'}
               </h3>
               <p className={styles.modalText}>
-                {confirmModal.action === 'close' 
+                {confirmModal.action === 'close'
                   ? 'Apakah Anda yakin ingin menutup kasir? Transaksi penjualan baru tidak akan dapat diproses sampai kasir dibuka kembali.'
                   : 'Apakah Anda yakin ingin membuka kasir? Transaksi penjualan baru akan dapat mulai dilakukan.'
                 }
               </p>
             </div>
             <div className={styles.modalFooter}>
-              <button 
-                className={styles.btnCancel} 
+              <button
+                className={styles.btnCancel}
                 onClick={() => setConfirmModal({ isOpen: false, action: null })}
               >
                 Batal
               </button>
-              <button 
+              <button
                 className={`${styles.btnSubmit} ${confirmModal.action === 'close' ? styles.btnDanger : styles.btnSuccess}`}
                 onClick={executeStoreStatus}
               >
@@ -219,7 +219,7 @@ export default function Settlement() {
 
       {/* Custom Toast Notification */}
       {notification && (
-        <div 
+        <div
           className={`${styles.toast} ${notification.type === 'success' ? styles.toastSuccess : styles.toastError}`}
           onClick={() => setNotification(null)}
         >

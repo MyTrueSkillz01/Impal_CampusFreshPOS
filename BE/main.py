@@ -231,7 +231,7 @@ def delete_cashier(id: int):
 @app.get("/api/products")
 def get_products():
     conn = get_db()
-    products = conn.execute("SELECT * FROM products").fetchall()
+    products = conn.execute("SELECT * FROM products ORDER BY product_code ASC").fetchall()
     conn.close()
     return [dict(p) for p in products]
 

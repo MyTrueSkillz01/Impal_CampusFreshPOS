@@ -17,6 +17,7 @@ export async function GET(request) {
         const response = await fetch(`${API_URL}/api/cashiers?requester_role=${userRole}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
+            cache: 'no-store',
         });
 
         const data = await response.json();

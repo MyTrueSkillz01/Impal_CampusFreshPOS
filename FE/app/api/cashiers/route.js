@@ -1,20 +1,30 @@
+export const dynamic = 'force-dynamic';
+
 import { NextResponse } from 'next/server';
+import { getSession } from '@/lib/auth';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
-export async function GET() {
+export async function GET(request) {
     try {
-        const response = await fetch(`${API_URL}/api/cashiers`, {
+        const session = await getSession();
+        if (!session || !session.user) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        const userRole = session.user.role;
+
+        const response = await fetch(`${API_URL}/api/cashiers?requester_role=${userRole}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
         });
-        
+
         const data = await response.json();
-        
+
         if (!response.ok) {
             return NextResponse.json({ error: 'Gagal mengambil data' }, { status: response.status });
         }
-        
+
         return NextResponse.json(data);
     } catch (error) {
         console.error('Error fetching cashiers:', error);

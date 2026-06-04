@@ -181,9 +181,16 @@ def logout():
 
 # ─── Cashiers / Users Endpoints ─────────────────────────────────────
 @app.get("/api/cashiers")
-def get_cashiers():
+def get_cashiers(requester_role: Optional[str] = None):
     conn = get_db()
-    users = conn.execute("SELECT id, name, username, role, status FROM cashiers").fetchall()
+    
+    # Jika yang meminta adalah Admin, tarik kolom password
+    if requester_role == 'Admin':
+        users = conn.execute("SELECT id, name, username, password, role, status FROM cashiers").fetchall()
+    # Jika bukan Admin, sembunyikan password
+    else:
+        users = conn.execute("SELECT id, name, username, role, status FROM cashiers").fetchall()
+        
     conn.close()
     return [dict(u) for u in users]
 

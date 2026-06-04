@@ -136,7 +136,7 @@ class ProductCreate(BaseModel):
     is_active: Optional[bool] = True
     seller_phone: Optional[str] = ''
 
-# Model Pydantic Baru untuk Manajemen Kasir
+# Model Pydantic untuk Manajemen Kasir
 class CashierBase(BaseModel):
     username: str
     password: str
@@ -182,8 +182,10 @@ def logout():
 # ─── Cashiers / Users Endpoints ─────────────────────────────────────
 @app.get("/api/cashiers")
 def get_cashiers(requester_role: Optional[str] = None):
-    conn = get_db()
+    # Log pelacakan untuk terminal Azure
+    print(f"\n[DEBUG] GET /api/cashiers dipanggil! requester_role yang diterima: '{requester_role}'\n")
     
+    conn = get_db()
     # Jika yang meminta adalah Admin, tarik kolom password
     if requester_role == 'Admin':
         users = conn.execute("SELECT id, name, username, password, role, status FROM cashiers").fetchall()
@@ -367,7 +369,6 @@ def get_settlement_status():
     total_revenue = 0
     item_summary = {}
 
-    # Logika yang diperbarui agar tabel settlement memunculkan item
     for t in tx:
         total_revenue += t["total_amount"]
         items = json.loads(t["items"])

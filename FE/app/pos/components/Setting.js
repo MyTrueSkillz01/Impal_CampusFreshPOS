@@ -50,6 +50,7 @@ export default function Setting() {
       const res = await fetch('/api/cashiers');
       if (!res.ok) throw new Error('Gagal memuat data kasir');
       const data = await res.json();
+      console.log("Data dari backend:", data);
       setCashiers(data);
     } catch (err) {
       setError(err.message);

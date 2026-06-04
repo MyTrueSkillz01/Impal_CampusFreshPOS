@@ -218,7 +218,7 @@ export default function Setting() {
                 <td>
                   <div className={styles.pwCell}>
                     <span style={{ fontFamily: 'monospace', fontSize: '1.1rem', letterSpacing: isAdmin && visiblePasswords[cashier.id] ? '0' : '2px' }}>
-                      {isAdmin ? (visiblePasswords[cashier.id] ? decodePassword(cashier.password) : '********') : '***'}
+                      {isAdmin ? (visiblePasswords[cashier.id] ? cashier.password : '********') : '***'}
                     </span>
                     {isAdmin && (
                       <button 

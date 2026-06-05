@@ -285,7 +285,7 @@ def get_transactions():
     conn.close()
     return [dict(t) for t in tx]
 
-@app.post("/api/transactions", responses={400: {"description": "Cart is empty atau Kasir sedang ditutup"}})
+@app.post("/api/transactions", responses={400: {"description": "Cart is empty, Kasir ditutup, atau Stok kurang"}})
 async def create_transaction(request: Request):
     body = await request.json()
     cart = body.get("cart", [])
@@ -303,16 +303,26 @@ async def create_transaction(request: Request):
         conn.close()
         raise HTTPException(status_code=400, detail="Kasir sedang ditutup!")
 
-    # Kurangi stok
+    cursor = conn.cursor()
+    
+    # 1. Kurangi stok dengan proteksi minus sesuai standar kueri di DPPL
     for item in cart:
-        conn.execute("UPDATE products SET stock = stock - ? WHERE id = ?", (item["qty"], item["id"]))
+        cursor.execute("""
+            UPDATE products 
+            SET stock = stock - ? 
+            WHERE id = ? AND stock >= ?
+        """, (item["qty"], item["id"], item["qty"]))
+        
+        if cursor.rowcount == 0:
+            conn.rollback()
+            conn.close()
+            raise HTTPException(status_code=400, detail=f"Gagal! Stok produk '{item.get('name', 'Unknown')}' tidak mencukupi untuk transaksi ini.")
 
-    # Hitung daily number & Buat Invoice
+    # 2. Hitung daily number & Buat Invoice
     today = datetime.now()
-    daily_count = conn.execute("SELECT COUNT(*) FROM transactions WHERE date(created_at) = date('now', 'localtime')").fetchone()[0]
+    daily_count = cursor.execute("SELECT COUNT(*) FROM transactions WHERE date(created_at) = date('now', 'localtime')").fetchone()[0]
     daily_number = daily_count + 1
 
-    cursor = conn.cursor()
     cursor.execute("""
         INSERT INTO transactions (daily_number, invoice_number, cashier_name, total_amount, items, customer_info)
         VALUES (?, ?, ?, ?, ?, ?)

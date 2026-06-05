@@ -32,3 +32,24 @@ export async function GET(request) {
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }
+
+export async function POST(request) {
+    try {
+        const body = await request.json();
+        const response = await fetch(`${API_URL}/api/cashiers`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+        });
+        
+        const data = await response.json();
+        if (!response.ok) {
+            return NextResponse.json({ error: data.detail || 'Gagal menambah karyawan' }, { status: response.status });
+        }
+        
+        return NextResponse.json(data);
+    } catch (error) {
+        console.error('Error adding cashier:', error);
+        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    }
+}

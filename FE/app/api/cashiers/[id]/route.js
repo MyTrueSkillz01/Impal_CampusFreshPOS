@@ -21,7 +21,7 @@ export async function PUT(request, { params }) {
 }
 
 export async function DELETE(request, { params }) {
-    const { id } = params;
+    const { id } = await params;
     try {
         const response = await fetch(`${API_URL}/api/cashiers/${id}`, {
             method: 'DELETE',

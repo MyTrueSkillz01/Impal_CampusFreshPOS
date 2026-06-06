@@ -137,7 +137,7 @@ export default function Setting() {
     if (!selectedCashier) return;
     try {
       setIsSaving(true);
-      const res = await fetch(`/api/cashiers/${selectedCashier.id}`, {
+      const res = await fetch(`${API_URL}/api/cashiers/${selectedCashier.id}`, {
         method: 'DELETE'
       });
       const result = await res.json();

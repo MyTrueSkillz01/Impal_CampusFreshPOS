@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 export async function PUT(request, { params }) {
-    const { id } = params;
+    const { id } = await params;
     try {
         const body = await request.json();
         const response = await fetch(`${API_URL}/api/products/${id}`, {
@@ -21,7 +21,7 @@ export async function PUT(request, { params }) {
 }
 
 export async function DELETE(request, { params }) {
-    const { id } = params;
+    const { id } = await params;
     try {
         const response = await fetch(`${API_URL}/api/products/${id}`, {
             method: 'DELETE',

@@ -86,20 +86,22 @@ def init_db():
         );
     """)
 
-    # Seed store settings (Buka/Tutup Toko)
+    # Seed store settings
     if cursor.execute("SELECT COUNT(*) FROM store_settings WHERE key = 'is_open'").fetchone()[0] == 0:
         cursor.execute("INSERT INTO store_settings (key, value) VALUES ('is_open', 'true')")
 
-    # Seed cashiers
+    # Seed cashiers (Diperbarui dengan menyertakan Role)
     if cursor.execute("SELECT COUNT(*) FROM cashiers").fetchone()[0] == 0:
         cashiers = [
-            ('kresna', 'hash_pw_001', 'Kresna Satriawansyah'),
-            ('ihsan', 'hash_pw_002', 'Ihsan Dwika Putra'),
-            ('raisya', 'hash_pw_003', 'Raisya Latifah'),
-            ('wafiq', 'hash_pw_004', 'Wafiq Aditiya'),
-            ('admin', 'hash_pw_005', 'Admin Kasir'),
+            ('kresna', 'hash_pw_001', 'Kresna Satriawansyah', 'Kasir'),
+            ('ihsan', 'hash_pw_002', 'Ihsan Dwika Putra', 'Kasir'),
+            ('raisya', 'hash_pw_003', 'Raisya Latifah', 'Kasir'),
+            ('wafiq', 'hash_pw_004', 'Wafiq Aditiya', 'Kasir'),
+            ('admin', 'hash_pw_005', 'Admin Kasir', 'Admin'),
         ]
-        cursor.executemany("INSERT INTO cashiers (username, password, name) VALUES (?, ?, ?)", cashiers)
+        cursor.executemany("INSERT INTO cashiers (username, password, name, role) VALUES (?, ?, ?, ?)", cashiers)
+
+    cursor.execute("UPDATE cashiers SET role = 'Admin' WHERE username = 'admin'")
 
     # Seed products
     if cursor.execute("SELECT COUNT(*) FROM products").fetchone()[0] == 0:
